@@ -1,6 +1,6 @@
 import IService from "@/interfaces/IService";
 
-const contacts = {
+export const contacts = {
     phone: {
         value: '+79999999999',
         text: '+7(999)999-99-99'
@@ -11,7 +11,7 @@ const contacts = {
     }
 }
 
-const services:IService[] = [
+export const servicesList:IService[] = [
     {
         id: '1',
         name: 'Example 1',
@@ -21,4 +21,3 @@ const services:IService[] = [
     }
 ]
 
-export default { contacts, services }

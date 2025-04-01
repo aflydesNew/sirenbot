@@ -1,5 +1,6 @@
-import { Telegraf, Markup } from "telegraf";
-import { config } from "@/config/env";
+import { Telegraf, Markup } from 'telegraf';
+import { config } from '@/config/env';
+import { servicesList } from '@/config/vars';
 
 const bot = new Telegraf(config.telegramToken);
 
@@ -17,10 +18,11 @@ bot.start((ctx) => {
 });
 
 bot.hears("🛍 Список услуг", (ctx) => {
-    ctx.reply("Вот список наших услуг:", Markup.inlineKeyboard([
-        [Markup.button.callback("Купить услугу 1", "buy_service_1")],
-        [Markup.button.callback("Купить услугу 2", "buy_service_2")],
-    ]));
+    const buttons = servicesList.map((service) =>
+      [Markup.button.callback(`🛒 Купить ${service.name} — ${service.price}₽`, `buy_${service.id}`)]
+    );
+  
+    ctx.reply("Вот список наших услуг:", Markup.inlineKeyboard(buttons));
 });
 
 bot.hears("📞 Контакты", (ctx) => {
@@ -33,8 +35,7 @@ bot.hears("✍ Оставить контакт", (ctx) => {
     ]).resize());
 });
 
-
 export const startBot = () => {
-    bot.launch();
+    bot.launch();  // Просто запускаем бота без передачи polling
     console.log("🤖 Telegram бот запущен!");
 };
