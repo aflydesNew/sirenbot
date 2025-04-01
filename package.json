@@ -1,0 +1,37 @@
+{
+  "name": "sirenbot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node dist/server.js",
+    "dev": "ts-node -r tsconfig-paths/register src/server.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aflydesNew/sirenbot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aflydesNew/sirenbot/issues"
+  },
+  "homepage": "https://github.com/aflydesNew/sirenbot#readme",
+  "description": "",
+  "dependencies": {
+    "axios": "^1.8.4",
+    "body-parser": "^2.2.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "telegraf": "^4.16.3",
+    "vk-io": "^4.9.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.13.14",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.8.2"
+  }
+}
