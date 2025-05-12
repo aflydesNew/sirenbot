@@ -1,71 +1,53 @@
 import { Telegraf, Markup, Context } from 'telegraf'
 import { config } from '@/config/env'
-import { servicesList } from '@/config/vars'
+import { servicesList, messages } from '@/config/vars'
+import { setupFormHandler } from '@/services/formHandler'
 
 const bot = new Telegraf(config.telegramToken)
 
-const adminChatId = 'ВАШ_CHAT_ID' // Замените на ваш реальный chat_id
-
+const adminChatId = config.adminChatId || ''
+const backToMenuButton = ['⬅️ Назад в меню']
 // 📌 Главное меню
 const mainMenu = Markup.keyboard([
-    ['🛍 Список услуг', '📞 Контакты'],
-    ['✍ Оставить контакт'],
+    ['Получить видеоурок + гайд'],
+    ['PDF-книга “Кожа и вросшие”'],
+    ['Записаться на обучение депиляции'],
+    ['О продукте'],
+    ['Купить продукцию Никольс']
 ]).resize()
 
 bot.start((ctx: Context) => {
     ctx.reply(
-        `Привет, ${ctx.from?.first_name}! 👋\nДобро пожаловать! Выберите действие:`,
-        mainMenu
-    )
-})
-
-bot.hears('🛍 Список услуг', (ctx: Context) => {
-    const buttons = servicesList.map((service) =>
-        [Markup.button.callback(`🛒 Купить ${service.name} — ${service.price}₽`, `buy_${service.id}`)]
-    )
-
-    ctx.reply('Вот список наших услуг:', Markup.inlineKeyboard(buttons))
-})
-
-bot.hears('📞 Контакты', (ctx: Context) => {
-    ctx.reply(
-        'Наши контакты:\n📧 email@example.com\n📞 +7 (123) 456-78-90',
-        Markup.keyboard([
-            ['⬅️ Назад в меню'],
-        ]).resize()
-    )
-})
-
-bot.hears('✍ Оставить контакт', (ctx: Context) => {
-    ctx.reply(
-        'Отправьте ваш номер телефона:',
-        Markup.keyboard([
-            Markup.button.contactRequest('📲 Отправить номер'),
-            Markup.button.text('⬅️ Назад в меню'),
-        ]).resize()
-    )
-})
-
-bot.on('contact', (ctx: Context) => {
-    if (ctx.message && 'contact' in ctx.message) {
-        const contact = ctx.message.contact;
-        const user = ctx.from;
-
-        if (contact && user) {
-            const contactInfo = `📞 Новый контакт от пользователя ${user.first_name} ${user.last_name || ''} (@${user.username || 'не указан'})\nИмя: ${contact.first_name} ${contact.last_name || ''}\nНомер: ${contact.phone_number}`
-        
-        ctx.telegram.sendMessage(adminChatId, contactInfo)
-            .then(() => {
-                ctx.reply('Спасибо! Ваш контакт получен.')
-            })
-            .catch((error) => {
-                console.error('Ошибка отправки сообщения в чат:', error)
-                ctx.reply('Произошла ошибка при отправке вашего контакта.')
-            })
+        messages.helloMessage,
+        {
+            parse_mode: 'HTML',
+            reply_markup: mainMenu.reply_markup
         }
-    } else {
-        ctx.reply('Пожалуйста, используйте кнопку для отправки контакта.');
+    )
+})
+
+bot.hears('Получить видеоурок + гайд', (ctx: Context) => {
+    const service = servicesList.find(service => service.id === '1')
+
+    if (!service) {
+        return ctx.reply('Произошла ошибка, попробуйте снова позже', Markup.keyboard([...backToMenuButton]))
     }
+
+    ctx.reply(service.description, Markup.keyboard([[`${service.name}`, `buy_${service.id}`], backToMenuButton]))
+})
+
+bot.hears('PDF-книга “Кожа и вросшие”', (ctx: Context) => {
+    const service = servicesList.find(service => service.id === '2')
+
+    if (!service) {
+        return ctx.reply('Произошла ошибка, попробуйте снова позже', Markup.keyboard([...backToMenuButton]))
+    }
+
+    ctx.reply(service.description, Markup.keyboard([[`${service.name}`, `buy_${service.id}`], backToMenuButton]))
+})
+
+bot.hears('Записаться на обучение депиляции', (ctx: Context) => {
+    ctx.reply(messages.signUpForTraining, Markup.keyboard([['Записаться на курс'], backToMenuButton]))
 })
 
 bot.action(/buy_/, (ctx: Context) => {
@@ -86,5 +68,6 @@ bot.hears('⬅️ Назад в меню', (ctx: Context) => {
 
 export const startBot = () => {
     bot.launch()
+    setupFormHandler(bot)
     console.log('🤖 Telegram бот запущен!')
 }

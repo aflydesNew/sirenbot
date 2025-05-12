@@ -3,5 +3,6 @@ export default interface IService {
     name: string,
     description: string,
     price: number,
-    image: string
+    image: string,
+    buttonName: string
 }
