@@ -6,7 +6,6 @@ import FormState from '@/interfaces/IFormState'
 const userFormState = new Map<number, FormState>()
 
 export const setupFormHandler = (bot: Telegraf) => {
-    // Запуск формы по кнопке
     bot.hears('Записаться на курс', (ctx: Context) => {
         userFormState.set(ctx.from.id, {
             step: 'fio',
