@@ -71,6 +71,7 @@ export const servicesList:IService[] = [
         id: '1',
         name: 'Получить видеоурок + гайд',
         description: messages.guide,
+        paymentDescription: 'Оплата услуги: "Получить видеоурок + гайд". Стоимость: 999 ₽',
         price: 999,
         image: '',
         buttonName: 'Оплатить и получить доступ'
@@ -79,6 +80,7 @@ export const servicesList:IService[] = [
         id: '2',
         name: 'PDF-книга “Кожа и вросшие”',
         description: messages.pdfBook,
+        paymentDescription: 'Оплата услуги: PDF-книга. Стоимость: 5000 ₽',
         price: 5000,
         image: '',
         buttonName: 'Купить PDF-книгу'

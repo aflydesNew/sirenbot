@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { config } from "@/config/env";
-import { checkPayment } from "@/services/paymentsStatus";
+import { initPayment } from "@/services/payment";
 import { startBot } from "@/bots/telegram";
 const app = express();
 app.use(express.json());

@@ -3,6 +3,7 @@ import { CallbackQuery } from 'telegraf/typings/core/types/typegram'
 import { config } from '@/config/env'
 import { servicesList, messages, backToMenuButton, mainMenuMarkup } from '@/config/vars'
 import { setupFormHandler } from '@/services/formHandler'
+import { initPayment } from '@/services/payment'
 
 const bot = new Telegraf(config.telegramToken)
 
@@ -64,46 +65,56 @@ bot.hears('О продукте', (ctx: Context) => {
 })
 
 bot.action(/buy_/, async (ctx: Context) => {
-    const callbackQuery = ctx.callbackQuery
-    if (callbackQuery && 'data' in callbackQuery) {
-        const serviceId = callbackQuery.data.replace('buy_', '')
-        const service = servicesList.find(s => s.id === serviceId)
+  const callbackQuery = ctx.callbackQuery
 
-        if (!service) {
-            return ctx.reply('Извините, услуга не найдена.', { parse_mode: 'HTML' })
-        }
+  if (!callbackQuery || !('data' in callbackQuery)) {
+    return ctx.reply('Некорректный формат запроса.')
+  }
 
-        await ctx.reply(
-            `<b>Вы выбрали услугу:</b> ${service.name}\n\n<b>Цена:</b> ${service.price} ₽`,
-            {
-                parse_mode: 'HTML',
-                reply_markup: Markup.inlineKeyboard([
-                    [Markup.button.callback('💳 Оплатить через Tinkoff', `pay_tinkoff_${service.id}`)],
-                    [Markup.button.callback('⬅️ Назад в меню', 'back_to_menu')]
-                ]).reply_markup
-            }
-        )
-    }
-})
+  const serviceId = callbackQuery.data.replace('buy_', '')
+  const service = servicesList.find(s => s.id === serviceId)
 
-bot.action(/pay_tinkoff_/, async (ctx: Context) => {
-    const callbackQuery = ctx.callbackQuery
+  if (!service) {
+    return ctx.reply('Услуга не найдена.', { parse_mode: 'HTML' })
+  }
 
-    if (!callbackQuery || !('data' in callbackQuery)) {
-        return ctx.reply('Некорректный формат запроса.')
-    }
+  const orderId = `${service.id}_${ctx.from?.id || 'unknown'}`
 
-    const serviceId = callbackQuery.data.replace('pay_tinkoff_', '')
-    const service = servicesList.find(s => s.id === serviceId)
-
-    if (!service) {
-        return ctx.reply('Услуга не найдена.', { parse_mode: 'HTML' })
-    }
-
-    await ctx.reply(
-        `<b>Тестовая оплата</b>\n\nВы бы оплатили: <b>${service.name}</b> за <b>${service.price} ₽</b>\n\n⚠️ Пока что оплата не подключена.`,
-        { parse_mode: 'HTML' }
+  try {
+    const payment = await initPayment(
+      service.price,
+      orderId,
+      service.name,
+      service.paymentDescription || '',
+      'test@test.ru',
+      '+79999999999'
     )
+
+    if (payment?.PaymentURL) {
+      await ctx.reply(
+        `<b>Оплата ${service.name}</b>\n\nНажмите кнопку ниже, чтобы перейти к оплате.`,
+        {
+          parse_mode: 'HTML',
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: '💳 Перейти к оплате',
+                  url: payment.PaymentURL,
+                },
+              ],
+            ],
+          },
+        }
+      )
+    } else {
+      console.error('Ошибка при инициализации оплаты:', payment)
+      await ctx.reply('Произошла ошибка при создании платежа. Попробуйте позже.')
+    }
+  } catch (error) {
+    console.error('Ошибка оплаты:', error)
+    await ctx.reply('Произошла внутренняя ошибка при попытке оплаты.')
+  }
 })
 
 bot.hears('⬅️ Назад в меню', (ctx: Context) => {
